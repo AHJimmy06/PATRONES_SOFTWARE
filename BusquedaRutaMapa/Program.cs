@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BusquedaRutaMapa.Application;
+using BusquedaRutaMapa.Domain;
 
 namespace BusquedaRutaMapa
 {
@@ -8,6 +9,7 @@ namespace BusquedaRutaMapa
     {
         static void Main(string[] args)
         {
+            // Definición del grafo de distancias
             var graph = new Dictionary<string, List<(string, double)>>
             {
                 ["Quito"] = new List<(string, double)> { ("Ambato", 120), ("Santo Domingo", 100) },
@@ -25,15 +27,38 @@ namespace BusquedaRutaMapa
             string origin = "Quito";
             string destination = "Cuenca";
 
-            var searcher = new DijkstraSearcher(graph);
-            var path = searcher.FindShortestPath(origin, destination, out double distance);
+            // Crear el contexto de búsqueda (Strategy Pattern)
+            ISearcher searcher = new DijkstraSearcher();
 
-            if (path != null)
+            // Configurar los nodos de inicio y fin
+            var startNode = new SearchNode(new MapState(origin), null, 0, 0, graph);
+            var goalNode = new SearchNode(new MapState(destination), null, 0, 0, null);
+
+            // Ejecutar la búsqueda
+            var resultNode = searcher.Search(startNode, goalNode);
+
+            if (resultNode != null)
             {
                 Console.WriteLine($"Origen: {origin} -> Destino: {destination}");
-                Console.WriteLine("RUTA: " + string.Join(" -> ", path));
-                Console.WriteLine($"Distancia: {distance} km");
+                Console.WriteLine("RUTA: " + string.Join(" -> ", ReconstructPath(resultNode)));
+                Console.WriteLine($"Distancia: {resultNode.G} km");
             }
+            else
+            {
+                Console.WriteLine("No se encontró una ruta.");
+            }
+        }
+
+        private static List<string> ReconstructPath(ISearchNode node)
+        {
+            var path = new List<string>();
+            while (node != null)
+            {
+                path.Add(node.ToString());
+                node = node.Parent;
+            }
+            path.Reverse();
+            return path;
         }
     }
 }

@@ -5,14 +5,13 @@ using System.Linq;
 namespace ProblemaDelViajero.Domain
 {
     /// <summary>
-    /// Representa el ESTADO del problema según Fred Mellender.
-    /// Encapsula la configuración actual del recorrido.
+    /// Representa el ESTADO del problema (Fred Mellender).
     /// </summary>
     public class TspState : ICloneable
     {
         public List<int> Path { get; private set; }
         public double CurrentDistance { get; set; }
-        public int CurrentCity => Path.Last();
+        public int CurrentCity => Path.Count > 0 ? Path.Last() : -1;
 
         public TspState(int startCity)
         {

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ProblemaDelViajero.Application;
+using ProblemaDelViajero.Domain;
 
 namespace ProblemaDelViajero
 {
@@ -8,26 +10,42 @@ namespace ProblemaDelViajero
     {
         static void Main(string[] args)
         {
-            string[] cities = { "Quito", "Guayaquil", "Cuenca", "Ambato", "Manta", "Loja" };
-            
+            string[] cities = { "Quito", "Guayaquil", "Cuenca", "Manta" };
             double[,] distances = {
-                { 0, 420, 440, 130, 380, 650 },   // Quito
-                { 420, 0, 190, 280, 190, 400 },   // Guayaquil
-                { 440, 190, 0, 310, 350, 210 },   // Cuenca
-                { 130, 280, 310, 0, 300, 520 },   // Ambato
-                { 380, 190, 350, 300, 0, 550 },   // Manta
-                { 650, 400, 210, 520, 550, 0 }    // Loja
+                { 0, 420, 450, 400 },
+                { 420, 0, 190, 190 },
+                { 450, 190, 0, 430 },
+                { 400, 190, 430, 0 }
             };
 
             Console.WriteLine("=== Problema del Viajero (Branch and Bound) ===");
-            Console.WriteLine($"Ciudades a visitar: {string.Join(", ", cities)}");
 
-            var solver = new BranchAndBoundSolver(cities, distances);
-            var result = solver.Solve();
+            // 1. Definir estado inicial (Ciudad 0)
+            var startState = new TspState(0);
+            
+            // 2. Crear nodo raíz de búsqueda
+            var rootNode = new SearchNode(startState, null, 0, 0, 0, distances, cities.Length);
 
-            Console.WriteLine("\nRESULTADO ENCONTRADO:");
-            Console.WriteLine($"Ruta óptima: {string.Join(" -> ", result.path)}");
-            Console.WriteLine($"Distancia total: {result.distance} km");
+            // 3. Configurar y ejecutar el Solver (Searcher)
+            var solver = new BranchAndBoundSolver(distances, cities.Length);
+            var resultNode = solver.Solve(rootNode);
+
+            if (resultNode != null)
+            {
+                var finalState = ((SearchNode)resultNode).State;
+                var pathNames = finalState.Path.Select(i => cities[i]).ToList();
+                pathNames.Add(cities[0]); // Volver al origen
+
+                double totalDistance = resultNode.Cost + distances[finalState.CurrentCity, 0];
+
+                Console.WriteLine("Mejor Ruta Encontrada:");
+                Console.WriteLine(string.Join(" -> ", pathNames));
+                Console.WriteLine($"Distancia Total: {totalDistance} km");
+            }
+            else
+            {
+                Console.WriteLine("No se encontró solución.");
+            }
         }
     }
 }

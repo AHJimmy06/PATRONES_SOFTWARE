@@ -1,0 +1,36 @@
+## Visual Studio
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+
+## .NET
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.dll
+*.exe
+*.pdb
+*.nupkg
+*.publish.xml
+
+## VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+## Rider / IntelliJ
+.idea/
+
+## OS specific
+.DS_Store
+Thumbs.db
+
+## Logs
+*.log

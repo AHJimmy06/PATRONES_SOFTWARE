@@ -1,0 +1,76 @@
+================================================================================
+EXPLICACIÓN DE LAS SOLUCIONES: PATRONES DE DISEÑO PARA BÚSQUEDA (FRED MELLENDER)
+================================================================================
+
+Este documento explica cómo se estructuraron las soluciones siguiendo los principios 
+del libro "Design Patterns for Searching in C#".
+
+--------------------------------------------------------------------------------
+CASO 1: BÚSQUEDA DE RUTA EN UN MAPA (DIJKSTRA)
+--------------------------------------------------------------------------------
+
+1. ¿Cómo se representó el estado?
+   Se representó mediante la clase 'MapState'. En este problema, el estado es una 
+   abstracción de la ubicación actual del agente en el grafo del mapa.
+
+2. ¿Qué datos contiene el estado?
+   - CityName (string): El nombre de la ciudad donde se encuentra el buscador.
+   Nota: Es un estado simple porque en este problema no importa "cómo" llegamos 
+   allí para saber qué opciones tenemos después, solo importa "dónde" estamos.
+
+3. ¿Cómo se generan nuevos estados?
+   Se generan a través del método 'GetSuccessors' en el 'SearchNode'. 
+   - El nodo consulta el diccionario del grafo usando la ciudad actual.
+   - Por cada conexión (carretera) disponible, se crea un NUEVO 'MapState' con 
+     la ciudad destino.
+   - Se envuelve en un nuevo 'SearchNode' que actualiza el costo acumulado (G).
+
+--------------------------------------------------------------------------------
+CASO 2: PROBLEMA DEL VIAJERO - TSP (BRANCH AND BOUND)
+--------------------------------------------------------------------------------
+
+1. ¿Cómo se representó el estado?
+   Se representó mediante la clase 'TspState'. A diferencia del mapa, aquí el 
+   estado es una configuración de un recorrido parcial.
+
+2. ¿Qué datos contiene el estado?
+   - Path (List<int>): Una lista ordenada de los índices de las ciudades ya visitadas.
+   - CurrentDistance (double): La suma de las distancias recorridas hasta ese punto.
+   Nota: Este estado es más complejo porque debe recordar el historial para no 
+   visitar la misma ciudad dos veces y para saber cuándo se ha completado el ciclo.
+
+3. ¿Cómo se generan nuevos estados?
+   - El 'SearchNode' identifica qué ciudades NO están en el 'Path' actual.
+   - Por cada ciudad faltante, se CLONA el estado actual (para no alterar el original).
+   - Se añade la nueva ciudad al 'Path' y se suma la distancia al 'CurrentDistance'.
+   - El 'SearchNode' calcula el 'LowerBound' (cota inferior) para decidir si este 
+     nuevo estado merece ser explorado o si debe ser "podado".
+
+--------------------------------------------------------------------------------
+RELACIÓN CON EL LIBRO "DESIGN PATTERNS FOR SEARCHING"
+--------------------------------------------------------------------------------
+
+Fred Mellender establece que para que un buscador sea profesional y escalable, 
+debe seguir estos tres pilares presentes en nuestras soluciones:
+
+A. Desacoplamiento (The SearchNode Pattern):
+   El algoritmo (Dijkstra o B&B) no sabe qué es una "Ciudad" o un "Kilómetro". 
+   Solo conoce la interfaz 'ISearchNode'. Esto permite que el MISMO motor de 
+   búsqueda pueda resolver un mapa, un puzzle o un juego de ajedrez.
+
+B. Encapsulamiento del Estado (The State Pattern):
+   Los datos del problema están en el 'State', pero la lógica de búsqueda (costos, 
+   padres, metas) está en el 'SearchNode'. Esto evita que las reglas del problema 
+   ensucien el algoritmo de búsqueda.
+
+C. Generación Dinámica de Sucesores:
+   En lugar de tener todos los estados en memoria, el libro propone que el 
+   'SearchNode' los genere "sobre la marcha" mediante 'GetSuccessors'. Esto es 
+   vital en el Problema del Viajero, donde las combinaciones son demasiadas para 
+   guardarlas todas desde el inicio.
+
+D. El Buscador como Estrategia (Strategy Pattern):
+   Tanto 'DijkstraSearcher' como 'BranchAndBoundSolver' actúan como estrategias 
+   que se pueden intercambiar. Cumplen con el principio SOLID de Inversión de 
+   Dependencias: el programa depende de abstracciones, no de detalles.
+================================================================================
